@@ -5,7 +5,7 @@ Do not decommission the old VPS workload until the GitHub Actions workflow has c
 ## Go/no-go checks
 
 - [ ] GitHub Actions secrets are configured, including the session-pooler `DATABASE_URL`.
-- [ ] Manual **Integration preflight (read-only)** passes: Supabase read-only query, one authenticated synthetic model request, and indie.md dry-run.
+- [ ] Scheduled **Integration preflight (read-only)** passes: Supabase read-only query, one authenticated synthetic model request, and indie.md dry-run.
 - [ ] The production workflow is ready, but `OVERSEAS_STORIES_PRODUCTION_ENABLED` remains false until the old timer is stopped.
 - [ ] The Substack authorization variable is enabled only if the selected content is authorized for the intended storage and AI processing.
 
