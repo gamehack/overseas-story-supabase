@@ -81,7 +81,7 @@ The database is expected to use PostgreSQL over TLS. For GitHub-hosted runners, 
 The scheduled workflow is `.github/workflows/weekly-pipeline.yml`.
 
 - Schedule: every Monday at **03:30 Asia/Shanghai** (Sunday 19:30 UTC).
-- Manual trigger: `workflow_dispatch`.
+- Manual trigger: `workflow_dispatch` (operational recovery only; CI and acceptance tests are automatic).
 - Order: CI checks → M1/M2 collection → M3 indexing → M4 localization.
 - Concurrency: overlapping scheduled runs are serialized.
 - The workflow runs on GitHub-hosted runners; it does not require a VPS, Docker daemon, or systemd timer.
@@ -101,8 +101,9 @@ Optional repository **Actions variable**:
 | Variable | Default | Purpose |
 |---|---|---|
 | `SUBSTACK_CONTENT_AUTHORIZED` | `false` | Explicitly enables the configured Substack RSS sources when set to `true` |
+| `OVERSEAS_STORIES_PRODUCTION_ENABLED` | `false` | Cutover safety gate; enable only after successful E2E and retiring the old scheduler |
 
-The workflow fails early when required database or model secrets are missing. The AI endpoint must use HTTPS.
+The production job is **disabled by default**. Set the repository variable `OVERSEAS_STORIES_PRODUCTION_ENABLED=true` **only after** GitHub-hosted end-to-end validation, secret configuration, and the old server timer being disabled. Otherwise the scheduled job is skipped and never writes to production. The workflow fails early when required database or model secrets are missing. The AI endpoint must use HTTPS.
 
 ### Substack content boundary
 
