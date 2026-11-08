@@ -40,10 +40,10 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("--dry-run --source indie-md --ai-limit 0", workflow)
         self.assertNotIn("workflow_dispatch:", workflow)
 
-    def test_manual_integration_preflight_checks_real_gateway_without_db_writes(self):
+    def test_scheduled_integration_preflight_checks_real_gateway_without_db_writes(self):
         workflow = (ROOT / ".github/workflows/integration-preflight.yml").read_text()
-        self.assertIn("workflow_dispatch:", workflow)
-        self.assertIn("github.event_name == 'workflow_dispatch'", workflow)
+        self.assertNotIn("workflow_dispatch:", workflow)
+        self.assertIn("github.event_name == 'schedule'", workflow)
         self.assertIn("default_transaction_read_only=on", workflow)
         self.assertIn("synthetic founder story", workflow)
 
