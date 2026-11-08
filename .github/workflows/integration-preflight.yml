@@ -9,7 +9,6 @@ on:
       - ".github/workflows/integration-preflight.yml"
   schedule:
     - cron: "41 20 * * 0" # Monday 04:41 Asia/Shanghai, after the weekly pipeline.
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -20,7 +19,7 @@ concurrency:
 
 jobs:
   preflight:
-    if: ${{ github.event_name == 'workflow_dispatch' || vars.OVERSEAS_STORIES_INTEGRATION_ENABLED == 'true' }}
+    if: ${{ vars.OVERSEAS_STORIES_INTEGRATION_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -68,7 +67,7 @@ jobs:
           PY
 
       - name: Verify authenticated model gateway with synthetic story (manual preflight only)
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'schedule'
         run: |
           python - <<'PY'
           from datetime import date
