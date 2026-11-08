@@ -178,7 +178,7 @@ class ExtractionTests(unittest.TestCase):
     def test_ai_endpoint_requires_https(self):
         StructuredExtractor._validate_endpoint("https://gateway.example/v1/chat/completions")
         for endpoint in (
-            "http://omniroute:20128/v1/chat/completions",
+            "http://gateway.internal:20128/v1/chat/completions",
             "http://example.com/v1/chat/completions",
             "https://user:password@gateway.example/v1/chat/completions",
         ):
