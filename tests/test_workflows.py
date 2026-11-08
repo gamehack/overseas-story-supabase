@@ -33,6 +33,13 @@ class WorkflowContractTests(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/weekly-pipeline.yml").read_text()
         self.assertIn("vars.OVERSEAS_STORIES_PRODUCTION_ENABLED == 'true'", workflow)
 
+    def test_integration_preflight_is_automatic_and_read_only(self):
+        workflow = (ROOT / ".github/workflows/integration-preflight.yml").read_text()
+        self.assertIn("OVERSEAS_STORIES_INTEGRATION_ENABLED == 'true'", workflow)
+        self.assertIn("default_transaction_read_only=on", workflow)
+        self.assertIn("--dry-run --source indie-md --ai-limit 0", workflow)
+        self.assertNotIn("workflow_dispatch:", workflow)
+
     def test_substack_requires_explicit_authorization(self):
         workflow = (ROOT / ".github/workflows/weekly-pipeline.yml").read_text()
         self.assertIn("vars.SUBSTACK_CONTENT_AUTHORIZED", workflow)
