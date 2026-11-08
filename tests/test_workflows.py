@@ -29,6 +29,10 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertNotIn("systemd", workflow)
         self.assertIn("runs-on: ubuntu-latest", workflow)
 
+    def test_production_requires_explicit_cutover(self):
+        workflow = (ROOT / ".github/workflows/weekly-pipeline.yml").read_text()
+        self.assertIn("vars.OVERSEAS_STORIES_PRODUCTION_ENABLED == 'true'", workflow)
+
     def test_substack_requires_explicit_authorization(self):
         workflow = (ROOT / ".github/workflows/weekly-pipeline.yml").read_text()
         self.assertIn("vars.SUBSTACK_CONTENT_AUTHORIZED", workflow)
