@@ -14,6 +14,10 @@ Once enabled, the workflow executes, in order:
 
 M2 and M4 each have independent limits of five model calls per run. A failure stops later stages; rerunning is safe because source and derived records are idempotent and source hashes prevent unnecessary model calls.
 
+## Automated preflight
+
+Set `OVERSEAS_STORIES_INTEGRATION_ENABLED=true` only after the required repository secrets are present. The independent `integration-preflight.yml` runs on relevant main pushes and a weekly schedule; it verifies a read-only PostgreSQL query and indie.md dry-run without incurring LLM fees. A passing result does not replace a successful real M1–M4 E2E or permission to cut over.
+
 ## Manual run
 
 Open **Actions → Weekly overseas founder stories → Run workflow** in GitHub. Manual and scheduled runs share a concurrency group, so they will not overlap. This is an emergency operations mechanism, not an acceptance-test requirement; automated checks run on push/PR.
@@ -32,6 +36,7 @@ Optional Actions variable:
 
 - `SUBSTACK_CONTENT_AUTHORIZED` (defaults to `false`)
 - `OVERSEAS_STORIES_PRODUCTION_ENABLED` (defaults to `false`; cutover switch)
+- `OVERSEAS_STORIES_INTEGRATION_ENABLED` (defaults to `false`; automated read-only integration gate)
 
 ## Troubleshooting
 
