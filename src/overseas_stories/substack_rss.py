@@ -14,6 +14,7 @@ from email.utils import parsedate_to_datetime
 from html.parser import HTMLParser
 
 from .models import Collection, Person, Story
+from .network import build_direct_opener
 
 
 MAX_FEED_BYTES = 2_000_000
@@ -201,13 +202,13 @@ class _SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
             raise FeedError("too many feed redirects")
         redirected = super().redirect_request(req, fp, code, msg, headers, newurl)
         if redirected is not None:
-            redirected.add_header("X-QJAI-Redirects", str(redirects))
+            redirected.add_header("X-Overseas-Story-Redirects", str(redirects))
         return redirected
 
 
 def fetch_feed(url: str) -> tuple[bytes, str, str]:
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/rss+xml, application/xml;q=0.9"})
-    opener = urllib.request.build_opener(_SafeRedirectHandler())
+    opener = build_direct_opener(_SafeRedirectHandler())
     try:
         with opener.open(request, timeout=HTTP_TIMEOUT_SECONDS) as response:
             data = response.read(MAX_FEED_BYTES + 1)
