@@ -1,0 +1,38 @@
+name: Public gateway smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/public-gateway-smoke.yml"
+      - "src/**"
+      - "pyproject.toml"
+  schedule:
+    # Daily 05:17 Asia/Shanghai = 21:17 UTC (previous day).
+    - cron: "17 21 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  public-gateway-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify HTTPS route and authentication boundary without credentials
+        shell: bash
+        run: |
+          python - <<'PY'
+          import urllib.error
+          import urllib.request
+
+          url = "https://omniroute.qjai.org/v1/chat/completions"
+          req = urllib.request.Request(url, method="GET", headers={"Accept": "application/json"})
+          try:
+              with urllib.request.urlopen(req, timeout=20) as response:
+                  code = response.status
+          except urllib.error.HTTPError as error:
+              code = error.code
+          if code != 401:
+              raise SystemExit(f"Unexpected gateway status: {code}; expected unauthenticated 401")
+          print("HTTPS reachable; gateway requires authentication (401). No model call made.")
+          PY
