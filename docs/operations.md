@@ -4,7 +4,9 @@
 
 The GitHub Actions workflow runs at 19:30 UTC every Sunday, which is Monday 03:30 in Asia/Shanghai. GitHub scheduled workflows can start later than the requested minute during periods of platform load.
 
-The workflow executes, in order:
+The production job is guarded by repository variable `OVERSEAS_STORIES_PRODUCTION_ENABLED`, which defaults to false. Before cutover, scheduled executions are intentionally skipped. Do not set the variable to true until the new GitHub Runner passes real, automatic M1–M4 integration validation and the legacy server's timer is disabled.
+
+Once enabled, the workflow executes, in order:
 
 1. M1/M2: `python -m overseas_stories.cli sync --source all --ai-limit 5`
 2. M3: `python -m overseas_stories.editorial --apply`
@@ -14,7 +16,7 @@ M2 and M4 each have independent limits of five model calls per run. A failure st
 
 ## Manual run
 
-Open **Actions → Weekly overseas founder stories → Run workflow** in GitHub. Manual and scheduled runs share a concurrency group, so they will not overlap.
+Open **Actions → Weekly overseas founder stories → Run workflow** in GitHub. Manual and scheduled runs share a concurrency group, so they will not overlap. This is an emergency operations mechanism, not an acceptance-test requirement; automated checks run on push/PR.
 
 ## Required configuration
 
@@ -29,6 +31,7 @@ Actions secrets:
 Optional Actions variable:
 
 - `SUBSTACK_CONTENT_AUTHORIZED` (defaults to `false`)
+- `OVERSEAS_STORIES_PRODUCTION_ENABLED` (defaults to `false`; cutover switch)
 
 ## Troubleshooting
 
