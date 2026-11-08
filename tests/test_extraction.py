@@ -86,8 +86,10 @@ class ExtractionTests(unittest.TestCase):
         }
         with patch.dict(os.environ, self.env, clear=False):
             extractor = StructuredExtractor()
-        with patch("overseas_stories.extraction.urllib.request.urlopen", return_value=FakeResponse(response)) as call:
+        with patch("overseas_stories.extraction.build_direct_opener") as build_opener:
+            build_opener.return_value.open.return_value = FakeResponse(response)
             result = extractor.extract(make_story(), "substack:demo")
+        call = build_opener.return_value.open
         request = call.call_args.args[0]
         sent = json.loads(request.data)
         self.assertEqual(sent["model"], "minimax-cn/MiniMax-M3")
