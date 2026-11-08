@@ -18,21 +18,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Install probe dependency
+        run: python -m pip install httpx==0.28.1
+
       - name: Verify HTTPS route and authentication boundary without credentials
         shell: bash
         run: |
           python - <<'PY'
-          import urllib.error
-          import urllib.request
-
+          import httpx
           url = "https://omniroute.qjai.org/v1/chat/completions"
-          req = urllib.request.Request(url, method="GET", headers={"Accept": "application/json"})
-          try:
-              with urllib.request.urlopen(req, timeout=20) as response:
-                  code = response.status
-          except urllib.error.HTTPError as error:
-              code = error.code
-          if code != 401:
-              raise SystemExit(f"Unexpected gateway status: {code}; expected unauthenticated 401")
+          with httpx.Client(timeout=15.0, follow_redirects=False, trust_env=False) as client:
+              response = client.get(url, headers={"Accept": "application/json"})
+          if response.status_code != 401:
+              raise SystemExit(f"Unexpected gateway status: {response.status_code}; expected unauthenticated 401")
           print("HTTPS reachable; gateway requires authentication (401). No model call made.")
           PY
