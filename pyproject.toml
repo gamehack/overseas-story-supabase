@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=75,<81"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "overseas-story-supabase"
+version = "0.1.0"
+description = "Collect and structure overseas founder stories with source provenance"
+requires-python = ">=3.12"
+dependencies = [
+  "PyYAML==6.0.3",
+  "psycopg[binary]==3.2.13",
+  "json-repair==0.64.4",
+]
+
+[project.scripts]
+overseas-stories = "overseas_stories.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
