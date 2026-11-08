@@ -21,6 +21,7 @@ from typing import Any
 from json_repair import loads as repair_json_loads
 
 from .editorial import FACT_LABELS, _db
+from .network import build_direct_opener
 from .extraction import (
     ExtractionError,
     MAX_RESPONSE_BYTES,
@@ -455,7 +456,7 @@ class ChineseLocalizer:
             },
         )
         try:
-            with urllib.request.urlopen(request, timeout=90) as response:
+            with build_direct_opener().open(request, timeout=90) as response:
                 raw = response.read(MAX_RESPONSE_BYTES + 1)
         except urllib.error.HTTPError as exc:
             raise ValueError(f"AI gateway returned HTTP {exc.code}") from None
