@@ -24,6 +24,8 @@ Open **Actions → Weekly overseas founder stories → Run workflow** in GitHub.
 
 ## Required configuration
 
+The production schedule is gated by the Actions variable `OVERSEAS_STORIES_PRODUCTION_ENABLED`, which defaults to false. The read-only preflight schedule is gated by `OVERSEAS_STORIES_INTEGRATION_ENABLED`, also false by default. A manual preflight run is allowed even while the scheduled preflight is disabled.
+
 Actions secrets:
 
 - `DATABASE_URL`
@@ -32,9 +34,13 @@ Actions secrets:
 - `AI_EXTRACTION_MODEL`
 - `SUPABASE_CA_CERT` (optional PEM CA certificate; required if the URL uses `sslmode=verify-full`)
 
-Optional Actions variable:
+Actions variables:
 
-- `SUBSTACK_CONTENT_AUTHORIZED` (defaults to `false`)
+- `OVERSEAS_STORIES_INTEGRATION_ENABLED` (defaults to `false`; enables scheduled read-only preflight)
+- `OVERSEAS_STORIES_PRODUCTION_ENABLED` (defaults to `false`; enables scheduled production M1–M4)
+- `SUBSTACK_CONTENT_AUTHORIZED` (defaults to `false`; enables Substack only when authorized)
+
+A manual run of **Integration preflight (read-only)** performs one authenticated model request using synthetic input and no database writes.
 - `OVERSEAS_STORIES_PRODUCTION_ENABLED` (defaults to `false`; cutover switch)
 - `OVERSEAS_STORIES_INTEGRATION_ENABLED` (defaults to `false`; automated read-only integration gate)
 
