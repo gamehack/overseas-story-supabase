@@ -40,7 +40,7 @@ Actions variables:
 - `OVERSEAS_STORIES_PRODUCTION_ENABLED` (defaults to `false`; enables scheduled production M1–M4)
 - `SUBSTACK_CONTENT_AUTHORIZED` (defaults to `false`; enables Substack only when authorized)
 
-A manual run of **Integration preflight (read-only)** performs one authenticated model request using synthetic input and no database writes.
+The scheduled **Integration preflight (read-only)** performs one authenticated model request using synthetic input and no database writes, in addition to its read-only database and source checks.
 - `OVERSEAS_STORIES_PRODUCTION_ENABLED` (defaults to `false`; cutover switch)
 - `OVERSEAS_STORIES_INTEGRATION_ENABLED` (defaults to `false`; automated read-only integration gate)
 
