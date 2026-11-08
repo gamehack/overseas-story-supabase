@@ -1,6 +1,8 @@
 """Fetch a public Markdown repository using one shallow Git checkout per run."""
 
 import subprocess
+
+from .network import direct_subprocess_env
 import tempfile
 from pathlib import Path, PurePosixPath
 
@@ -31,6 +33,7 @@ class GitCheckout:
                 capture_output=True,
                 text=True,
                 timeout=180,
+                env=direct_subprocess_env(),
             )
             result = subprocess.run(
                 ["git", "-C", str(self.root), "rev-parse", "HEAD"],
@@ -38,6 +41,7 @@ class GitCheckout:
                 capture_output=True,
                 text=True,
                 timeout=15,
+                env=direct_subprocess_env(),
             )
             self.revision = result.stdout.strip()
             return self
