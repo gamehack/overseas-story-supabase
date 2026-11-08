@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .models import Person, Story
+from .network import build_direct_opener
 
 
 FACT_FIELDS = (
@@ -156,11 +157,11 @@ class StructuredExtractor:
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "User-Agent": "qjai-overseas-stories/0.2",
+                "User-Agent": "overseas-story-supabase/0.1",
             },
         )
         try:
-            with urllib.request.urlopen(request, timeout=90) as response:
+            with build_direct_opener().open(request, timeout=90) as response:
                 raw = response.read(MAX_RESPONSE_BYTES + 1)
         except urllib.error.HTTPError as exc:
             raise ExtractionError(f"AI gateway returned HTTP {exc.code}") from None
