@@ -26,6 +26,8 @@ Use that login in the server-side PostgreSQL connection URL. Do not use a publis
 
 ## Connection from GitHub Actions
 
-Use the Supabase session pooler URL if the direct database host is not reachable from the GitHub-hosted runner. Require TLS with `sslmode=require`; prefer `sslmode=verify-full` when the appropriate CA certificate is available in the runner environment.
+Use the Supabase **session pooler** URL (port 5432) for GitHub-hosted runners, which use IPv4. Copy the exact connection string from the Supabase Dashboard's Connect panel and use the dedicated runner login.
+
+Require TLS with `sslmode=require`; prefer `sslmode=verify-full` when the database CA certificate is available. For certificate verification, store the PEM certificate as the optional GitHub Actions secret `SUPABASE_CA_CERT`. The workflow writes it to the ephemeral runner and sets `PGSSLROOTCERT`. Do not include a machine-specific `sslrootcert=/run/...` path in `DATABASE_URL`.
 
 Store the connection URL as the GitHub Actions secret `DATABASE_URL`. Do not place it in repository variables or workflow YAML.
