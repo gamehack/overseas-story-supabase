@@ -74,7 +74,7 @@ The SQL files in `db/` are migration templates for a new installation:
 
 Do not reapply initial schema or migrations to an existing production database without reviewing its migration history. This repository does not automatically run DDL against your Supabase project.
 
-The database is expected to use PostgreSQL over TLS. For GitHub-hosted runners, use the Supabase session pooler connection string when direct database connectivity is unavailable. Prefer certificate verification where the CA certificate is available; at minimum require TLS.
+The database is expected to use PostgreSQL over TLS. For GitHub-hosted runners, use the Supabase session pooler connection string (port 5432). Prefer `sslmode=verify-full` with the optional `SUPABASE_CA_CERT` secret; at minimum require TLS. Do not retain a server-local CA file path in the connection string.
 
 ## GitHub Actions
 
@@ -94,6 +94,7 @@ Configure these repository **Actions secrets** under **Settings → Secrets and 
 | `AI_EXTRACTION_ENDPOINT` | HTTPS URL of the OpenAI-compatible model gateway |
 | `AI_EXTRACTION_API_KEY` | Model gateway credential |
 | `AI_EXTRACTION_MODEL` | Model identifier used for extraction and localization |
+| `SUPABASE_CA_CERT` | Optional PEM CA certificate; required when `DATABASE_URL` uses `sslmode=verify-full` |
 
 Optional repository **Actions variable**:
 
