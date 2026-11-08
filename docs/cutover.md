@@ -4,16 +4,14 @@ Do not decommission the old VPS workload until the GitHub Actions workflow has c
 
 ## Go/no-go checks
 
-- [ ] GitHub Actions secrets are configured and the weekly workflow can connect to the existing Supabase database.
-- [ ] The GitHub-hosted runner can reach the HTTPS model gateway and complete M2/M4 calls.
-- [ ] M1/M2, M3, and M4 all complete successfully in one run.
-- [ ] Existing database records remain present; compare story, people, facts, project, editorial, and localization counts before and after the run.
-- [ ] No duplicate source records were created.
+- [ ] GitHub Actions secrets are configured, including the session-pooler `DATABASE_URL`.
+- [ ] Manual **Integration preflight (read-only)** passes: Supabase read-only query, one authenticated synthetic model request, and indie.md dry-run.
+- [ ] The production workflow is ready, but `OVERSEAS_STORIES_PRODUCTION_ENABLED` remains false until the old timer is stopped.
 - [ ] The Substack authorization variable is enabled only if the selected content is authorized for the intended storage and AI processing.
 
 ## Disable the old VPS schedule
 
-Run on the old server only after all go/no-go checks pass:
+After the read-only preflight passes, stop the old timer before enabling the new production schedule. Run on the old server:
 
 ```bash
 sudo systemctl disable --now qjai-overseas-stories-weekly.timer
@@ -22,11 +20,17 @@ systemctl is-active qjai-overseas-stories-weekly.timer || true
 systemctl is-enabled qjai-overseas-stories-weekly.timer || true
 ```
 
-The service is a one-shot unit; stopping it does not affect the Supabase database.
+The one-shot service is no longer scheduled. Leave the old container available for rollback until the new GitHub-hosted M1–M4 run succeeds; stopping the timer does not affect Supabase data.
+
+## Enable the new production schedule
+
+After the old timer is confirmed inactive, set the GitHub Actions variable `OVERSEAS_STORIES_PRODUCTION_ENABLED=true`. The next scheduled run is Monday 03:30 Asia/Shanghai. The manual workflow trigger is also available after this gate is enabled.
+
+Verify the first M1–M4 run succeeds and compare database counts. The expected existing data must remain intact; do not rerun SQL migrations.
 
 ## Remove the old application container
 
-The project directory is expected to be `/opt/qjai-overseas-stories`. Confirm the path before running:
+Only after the first new production run succeeds, remove the old application container. The project directory is expected to be `/opt/qjai-overseas-stories`. Confirm the path before running:
 
 ```bash
 cd /opt/qjai-overseas-stories
@@ -45,7 +49,7 @@ After server decommission, archive `gamehack/qjai-overseas-stories` as a private
 
 If the GitHub Actions runtime fails after cutover:
 
-1. Disable the GitHub Actions schedule or disable the weekly workflow.
-2. Confirm no GitHub-hosted run is still active.
+1. Set `OVERSEAS_STORIES_PRODUCTION_ENABLED=false` and confirm no GitHub-hosted production run is active.
+2. Restart the old application container if it was removed.
 3. Re-enable the old systemd timer only if a temporary rollback is required.
 4. Do not run both schedulers concurrently; both target the same Supabase records and could duplicate model spend even though database upserts are idempotent.
