@@ -24,6 +24,7 @@ Actions secrets:
 - `AI_EXTRACTION_ENDPOINT`
 - `AI_EXTRACTION_API_KEY`
 - `AI_EXTRACTION_MODEL`
+- `SUPABASE_CA_CERT` (optional PEM CA certificate; required if the URL uses `sslmode=verify-full`)
 
 Optional Actions variable:
 
