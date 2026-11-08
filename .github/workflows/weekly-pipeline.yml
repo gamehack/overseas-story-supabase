@@ -20,6 +20,7 @@ jobs:
     env:
       PYTHONUNBUFFERED: "1"
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SUPABASE_CA_CERT: ${{ secrets.SUPABASE_CA_CERT }}
       AI_EXTRACTION_ENDPOINT: ${{ secrets.AI_EXTRACTION_ENDPOINT }}
       AI_EXTRACTION_API_KEY: ${{ secrets.AI_EXTRACTION_API_KEY }}
       AI_EXTRACTION_MODEL: ${{ secrets.AI_EXTRACTION_MODEL }}
@@ -40,6 +41,16 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install .
 
+      - name: Install optional Supabase CA certificate
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "${SUPABASE_CA_CERT:-}" ]]; then
+            printf '%s\n' "$SUPABASE_CA_CERT" > "$RUNNER_TEMP/supabase-ca.crt"
+            chmod 600 "$RUNNER_TEMP/supabase-ca.crt"
+            echo "PGSSLROOTCERT=$RUNNER_TEMP/supabase-ca.crt" >> "$GITHUB_ENV"
+          fi
+
       - name: Validate runtime configuration
         shell: bash
         run: |
@@ -54,6 +65,15 @@ jobs:
             https://*) ;;
             *) echo "::error::AI_EXTRACTION_ENDPOINT must use HTTPS"; exit 1 ;;
           esac
+          case "$DATABASE_URL" in
+            *sslmode=disable*) echo "::error::DATABASE_URL must require TLS"; exit 1 ;;
+            *sslmode=require*|*sslmode=verify-ca*|*sslmode=verify-full*) ;;
+            *) echo "::error::DATABASE_URL must include sslmode=require or stronger"; exit 1 ;;
+          esac
+          if [[ "$DATABASE_URL" == *sslmode=verify-full* && -z "${SUPABASE_CA_CERT:-}" ]]; then
+            echo "::error::Set SUPABASE_CA_CERT when DATABASE_URL uses sslmode=verify-full"
+            exit 1
+          fi
           echo "Runtime secrets are present. Substack authorization flag: $SUBSTACK_CONTENT_AUTHORIZED"
 
       - name: Run offline regression tests
