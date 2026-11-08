@@ -102,6 +102,7 @@ Optional repository **Actions variable**:
 |---|---|---|
 | `SUBSTACK_CONTENT_AUTHORIZED` | `false` | Explicitly enables the configured Substack RSS sources when set to `true` |
 | `OVERSEAS_STORIES_PRODUCTION_ENABLED` | `false` | Cutover safety gate; enable only after successful E2E and retiring the old scheduler |
+| `OVERSEAS_STORIES_INTEGRATION_ENABLED` | `false` | Enables scheduled / push-triggered read-only integration preflight after secrets are configured |
 
 The production job is **disabled by default**. Set the repository variable `OVERSEAS_STORIES_PRODUCTION_ENABLED=true` **only after** GitHub-hosted end-to-end validation, secret configuration, and the old server timer being disabled. Otherwise the scheduled job is skipped and never writes to production. The workflow fails early when required database or model secrets are missing. The AI endpoint must use HTTPS.
 
@@ -110,6 +111,10 @@ The production job is **disabled by default**. Set the repository variable `OVER
 Substack collection is disabled unless `SUBSTACK_CONTENT_AUTHORIZED=true` is explicitly configured. Only enable it after reviewing the current platform terms and obtaining the permissions needed for the intended storage and processing of the selected publication content. The adapter does not bypass paywalls. RSS availability alone is not a blanket content licence.
 
 The code licence below does not grant rights to third-party articles, images, names, or other source materials. See `docs/data-rights.md`.
+
+### Automatic read-only integration preflight
+
+The separate `.github/workflows/integration-preflight.yml` runs automatically on relevant `main` pushes and weekly, but only when the repository variable `OVERSEAS_STORIES_INTEGRATION_ENABLED=true`. It verifies the real GitHub Runner's PostgreSQL TLS/read-only query access and the indie.md adapter's network access without AI calls or database writes. It is **not** a complete M2/M4 model-generation E2E, and successful preflight alone cannot authorize production cutover.
 
 ## Tests
 
