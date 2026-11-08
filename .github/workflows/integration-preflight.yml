@@ -8,7 +8,8 @@ on:
       - "pyproject.toml"
       - ".github/workflows/integration-preflight.yml"
   schedule:
-    - cron: "41 20 * * 0"  # Mon 04:41 Asia/Shanghai, after planned weekly slot.
+    - cron: "41 20 * * 0" # Monday 04:41 Asia/Shanghai, after the weekly pipeline.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -19,13 +20,15 @@ concurrency:
 
 jobs:
   preflight:
-    if: ${{ vars.OVERSEAS_STORIES_INTEGRATION_ENABLED == 'true' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.OVERSEAS_STORIES_INTEGRATION_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       SUPABASE_CA_CERT: ${{ secrets.SUPABASE_CA_CERT }}
       AI_EXTRACTION_ENDPOINT: ${{ secrets.AI_EXTRACTION_ENDPOINT }}
+      AI_EXTRACTION_API_KEY: ${{ secrets.AI_EXTRACTION_API_KEY }}
+      AI_EXTRACTION_MODEL: ${{ secrets.AI_EXTRACTION_MODEL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -33,6 +36,7 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: python -m pip install .
+
       - name: Set up ephemeral TLS certificate
         shell: bash
         run: |
@@ -42,6 +46,7 @@ jobs:
             chmod 600 "$RUNNER_TEMP/supabase-ca.crt"
             echo "PGSSLROOTCERT=$RUNNER_TEMP/supabase-ca.crt" >> "$GITHUB_ENV"
           fi
+
       - name: Verify read-only Supabase connectivity
         shell: bash
         run: |
@@ -61,5 +66,42 @@ jobs:
                   localizations = cur.fetchone()[0]
           print(f"Supabase read-only connection OK; stories={stories}, facts={facts}, zh_stories={localizations}")
           PY
-      - name: Verify source adapter without database writes or AI calls
+
+      - name: Verify authenticated model gateway with synthetic story (manual preflight only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          python - <<'PY'
+          from datetime import date
+          from overseas_stories.extraction import StructuredExtractor
+          from overseas_stories.models import Story
+
+          story_body = (
+              "I founded a small software company called Example Works in 2024. "
+              "The first product launch failed because customers could not finish onboarding. "
+              "I interviewed ten users and simplified the setup. "
+              "In the first month after the change, I made 500 dollars in revenue."
+          )
+          story = Story(
+              source_item_id="github-runner-integration-smoke",
+              title="A synthetic founder story for gateway verification",
+              subtitle="",
+              source_url="https://example.invalid/integration-smoke",
+              published_at=date(2026, 1, 1),
+              raw_markdown=story_body,
+              body_markdown=story_body,
+              person_ids=(),
+              person_roles={},
+              metadata={},
+              content_hash="integration-smoke",
+          )
+          extractor = StructuredExtractor()
+          if not extractor.configured:
+              raise SystemExit("AI gateway secrets are missing")
+          result = extractor.extract(story, "integration-smoke")
+          if not result.data.get("evidence_check_passed"):
+              raise SystemExit("Gateway returned output that failed source-evidence validation")
+          print("Authenticated model gateway smoke passed; no database writes were made.")
+          PY
+
+      - name: Verify indie.md source adapter without database writes or AI calls
         run: python -m overseas_stories.cli sync --dry-run --source indie-md --ai-limit 0
