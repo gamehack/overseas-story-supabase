@@ -44,7 +44,7 @@ python -m pip install .
 cp .env.example .env
 ```
 
-Set the environment variables shown in `.env.example`. Use a server-side PostgreSQL connection string; never use a browser publishable/anon key as a database credential.
+Set the environment variables shown in `.env.example`. Outbound proxy use is disabled by default to avoid ambient runner proxy interference; set `OUTBOUND_PROXY_ENABLED=true` only on networks that require an outbound proxy. Use a server-side PostgreSQL connection string; never use a browser publishable/anon key as a database credential.
 
 Preview collection without database writes:
 
@@ -101,10 +101,12 @@ Optional repository **Actions variable**:
 | Variable | Default | Purpose |
 |---|---|---|
 | `SUBSTACK_CONTENT_AUTHORIZED` | `false` | Explicitly enables the configured Substack RSS sources when set to `true` |
+| `OVERSEAS_STORIES_INTEGRATION_ENABLED` | `false` | Enables the scheduled read-only Supabase/source preflight |
+| `OVERSEAS_STORIES_PRODUCTION_ENABLED` | `false` | Enables the scheduled M1–M4 production workflow after cutover |
 | `OVERSEAS_STORIES_PRODUCTION_ENABLED` | `false` | Cutover safety gate; enable only after successful E2E and retiring the old scheduler |
 | `OVERSEAS_STORIES_INTEGRATION_ENABLED` | `false` | Enables scheduled / push-triggered read-only integration preflight after secrets are configured |
 
-The production job is **disabled by default**. Set the repository variable `OVERSEAS_STORIES_PRODUCTION_ENABLED=true` **only after** GitHub-hosted end-to-end validation, secret configuration, and the old server timer being disabled. Otherwise the scheduled job is skipped and never writes to production. The workflow fails early when required database or model secrets are missing. The AI endpoint must use HTTPS.
+The production job is **disabled by default**. Set the repository variable `OVERSEAS_STORIES_PRODUCTION_ENABLED=true` **only after** GitHub-hosted end-to-end validation, secret configuration, and the old server timer being disabled. Otherwise the scheduled job is skipped and never writes to production. The production workflow fails early when required database or model secrets are missing. The AI endpoint must use HTTPS. The preflight's manual run performs one real model call with synthetic data and writes nothing to Supabase.
 
 ### Substack content boundary
 
