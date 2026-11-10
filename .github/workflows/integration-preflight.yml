@@ -93,6 +93,10 @@ jobs:
               metadata={},
               content_hash="integration-smoke",
           )
+          import os
+          expected_endpoint = "https://omniroute.qjai.org/v1/chat/completions"
+          if os.getenv("AI_EXTRACTION_ENDPOINT", "").strip().rstrip("/") != expected_endpoint:
+              raise SystemExit("AI_EXTRACTION_ENDPOINT does not match the expected public OmniRoute chat completions URL")
           extractor = StructuredExtractor()
           if not extractor.configured:
               raise SystemExit("AI gateway secrets are missing")
