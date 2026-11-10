@@ -74,7 +74,7 @@ The SQL files in `db/` are migration templates for a new installation:
 
 Do not reapply initial schema or migrations to an existing production database without reviewing its migration history. This repository does not automatically run DDL against your Supabase project.
 
-The database is expected to use PostgreSQL over TLS. For GitHub-hosted runners, use the Supabase session pooler connection string (port 5432). Prefer `sslmode=verify-full` with the optional `SUPABASE_CA_CERT` secret; at minimum require TLS. Do not retain a server-local CA file path in the connection string.
+The database is expected to use PostgreSQL over TLS. For GitHub-hosted runners, use the Supabase shared session pooler connection string (port 5432). Its username for a custom role must be `ROLE.PROJECT_REF`, not just `ROLE`; the password must be that role's password. Prefer `sslmode=verify-full` with the optional `SUPABASE_CA_CERT` secret; at minimum require TLS. Do not retain a server-local CA file path in the connection string.
 
 ## GitHub Actions
 
@@ -103,10 +103,8 @@ Optional repository **Actions variable**:
 | `SUBSTACK_CONTENT_AUTHORIZED` | `false` | Explicitly enables the configured Substack RSS sources when set to `true` |
 | `OVERSEAS_STORIES_INTEGRATION_ENABLED` | `false` | Enables the scheduled read-only Supabase/source preflight |
 | `OVERSEAS_STORIES_PRODUCTION_ENABLED` | `false` | Enables the scheduled M1–M4 production workflow after cutover |
-| `OVERSEAS_STORIES_PRODUCTION_ENABLED` | `false` | Cutover safety gate; enable only after successful E2E and retiring the old scheduler |
-| `OVERSEAS_STORIES_INTEGRATION_ENABLED` | `false` | Enables scheduled / push-triggered read-only integration preflight after secrets are configured |
 
-The production job is **disabled by default**. Set the repository variable `OVERSEAS_STORIES_PRODUCTION_ENABLED=true` **only after** GitHub-hosted end-to-end validation, secret configuration, and the old server timer being disabled. Otherwise the scheduled job is skipped and never writes to production. The production workflow fails early when required database or model secrets are missing. The AI endpoint must use HTTPS. The preflight's manual run performs one real model call with synthetic data and writes nothing to Supabase.
+The production job is **disabled by default**. Set the repository variable `OVERSEAS_STORIES_PRODUCTION_ENABLED=true` **only after** GitHub-hosted end-to-end validation, secret configuration, and the old server timer being disabled. Otherwise the scheduled job is skipped and never writes to production. The production workflow fails early when required database or model secrets are missing. The AI endpoint must use HTTPS. The integration preflight runs automatically on relevant pushes and weekly, including one synthetic model call; it never writes to Supabase. Ensure the endpoint matches `https://omniroute.qjai.org/v1/chat/completions`.
 
 ### Substack content boundary
 
@@ -116,7 +114,7 @@ The code licence below does not grant rights to third-party articles, images, na
 
 ### Automatic read-only integration preflight
 
-The separate `.github/workflows/integration-preflight.yml` runs automatically on relevant `main` pushes and weekly, but only when the repository variable `OVERSEAS_STORIES_INTEGRATION_ENABLED=true`. It verifies the real GitHub Runner's PostgreSQL TLS/read-only query access and the indie.md adapter's network access without AI calls or database writes. It is **not** a complete M2/M4 model-generation E2E, and successful preflight alone cannot authorize production cutover.
+The separate `.github/workflows/integration-preflight.yml` runs automatically on relevant `main` pushes and weekly, but only when the repository variable `OVERSEAS_STORIES_INTEGRATION_ENABLED=true`. It verifies the real GitHub Runner's PostgreSQL TLS/read-only query access, a synthetic authenticated model extraction call, and the indie.md adapter's network access. Each probe runs independently so a database authentication failure does not hide the other results. No database writes are made. A successful preflight is **not** a full M1–M4 production E2E, and does not authorize cutover by itself.
 
 ## Tests
 
