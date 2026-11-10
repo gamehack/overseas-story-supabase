@@ -66,8 +66,7 @@ jobs:
           print(f"Supabase read-only connection OK; stories={stories}, facts={facts}, zh_stories={localizations}")
           PY
 
-      - name: Verify authenticated model gateway with synthetic story (scheduled smoke)
-        if: github.event_name == 'schedule'
+      - name: Verify authenticated model gateway with synthetic story (read-only smoke)
         run: |
           python - <<'PY'
           from datetime import date
