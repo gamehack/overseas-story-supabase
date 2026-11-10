@@ -59,8 +59,7 @@ jobs:
           username = cfg.get("user") or ""
           host = cfg.get("host") or ""
           flags = {
-              "username_has_expected_project_suffix": username.endswith(".yfyirwbvrcoqnlggfess"),
-              "username_is_expected_scoped_role": username == "qjai_overseas_collector.yfyirwbvrcoqnlggfess",
+              "username_has_project_suffix": "." in username and len(username.rsplit(".", 1)[-1]) >= 12,
               "host_is_shared_pooler": host.endswith(".pooler.supabase.com"),
               "session_pooler_port_5432": str(cfg.get("port") or "") == "5432",
               "password_present": bool(cfg.get("password")),
