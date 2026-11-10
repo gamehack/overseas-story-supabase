@@ -46,6 +46,30 @@ jobs:
             echo "PGSSLROOTCERT=$RUNNER_TEMP/supabase-ca.crt" >> "$GITHUB_ENV"
           fi
 
+      - name: Diagnose Supabase DSN structure without printing credentials
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from psycopg.conninfo import conninfo_to_dict
+          try:
+              cfg = conninfo_to_dict(os.environ.get("DATABASE_URL", ""))
+          except Exception:
+              raise SystemExit("DATABASE_URL is not a valid PostgreSQL connection string")
+          username = cfg.get("user") or ""
+          host = cfg.get("host") or ""
+          flags = {
+              "username_has_expected_project_suffix": username.endswith(".yfyirwbvrcoqnlggfess"),
+              "username_is_expected_scoped_role": username == "qjai_overseas_collector.yfyirwbvrcoqnlggfess",
+              "host_is_shared_pooler": host.endswith(".pooler.supabase.com"),
+              "session_pooler_port_5432": str(cfg.get("port") or "") == "5432",
+              "password_present": bool(cfg.get("password")),
+              "tls_enabled": cfg.get("sslmode") in {"require", "verify-ca", "verify-full"},
+          }
+          for label, valid in flags.items():
+              print(f"{label}: {'OK' if valid else 'MISMATCH'}")
+          PY
+
       - name: Verify read-only Supabase connectivity
         shell: bash
         run: |
