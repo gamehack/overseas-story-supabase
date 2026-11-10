@@ -67,6 +67,7 @@ jobs:
           PY
 
       - name: Verify authenticated model gateway with synthetic story (read-only smoke)
+        if: ${{ !cancelled() }}
         run: |
           python - <<'PY'
           from datetime import date
@@ -102,4 +103,5 @@ jobs:
           PY
 
       - name: Verify indie.md source adapter without database writes or AI calls
+        if: ${{ !cancelled() }}
         run: python -m overseas_stories.cli sync --dry-run --source indie-md --ai-limit 0
