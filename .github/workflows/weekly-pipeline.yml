@@ -46,11 +46,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -n "${SUPABASE_CA_CERT:-}" ]]; then
-            printf '%s\n' "$SUPABASE_CA_CERT" > "$RUNNER_TEMP/supabase-ca.crt"
-            chmod 600 "$RUNNER_TEMP/supabase-ca.crt"
-            echo "PGSSLROOTCERT=$RUNNER_TEMP/supabase-ca.crt" >> "$GITHUB_ENV"
+          if [[ -z "${SUPABASE_CA_CERT:-}" ]]; then
+            echo "::error::Missing required GitHub Actions secret: SUPABASE_CA_CERT"
+            exit 1
           fi
+          printf '%s\n' "$SUPABASE_CA_CERT" > "$RUNNER_TEMP/supabase-ca.crt"
+          chmod 600 "$RUNNER_TEMP/supabase-ca.crt"
+          echo "PGSSLROOTCERT=$RUNNER_TEMP/supabase-ca.crt" >> "$GITHUB_ENV"
 
       - name: Validate runtime configuration
         shell: bash
@@ -67,14 +69,12 @@ jobs:
             *) echo "::error::AI_EXTRACTION_ENDPOINT must use HTTPS"; exit 1 ;;
           esac
           case "$DATABASE_URL" in
-            *sslmode=disable*) echo "::error::DATABASE_URL must require TLS"; exit 1 ;;
-            *sslmode=require*|*sslmode=verify-ca*|*sslmode=verify-full*) ;;
-            *) echo "::error::DATABASE_URL must include sslmode=require or stronger"; exit 1 ;;
+            *sslmode=verify-full*) ;;
+            *) echo "::error::DATABASE_URL must preserve strict TLS verification with sslmode=verify-full"; exit 1 ;;
           esac
-          if [[ "$DATABASE_URL" == *sslmode=verify-full* && -z "${SUPABASE_CA_CERT:-}" ]]; then
-            echo "::error::Set SUPABASE_CA_CERT when DATABASE_URL uses sslmode=verify-full"
-            exit 1
-          fi
+          case "$DATABASE_URL" in
+            *sslrootcert=*) echo "::error::Remove server-local sslrootcert paths from DATABASE_URL; the workflow injects PGSSLROOTCERT"; exit 1 ;;
+          esac
           echo "Runtime secrets are present. Substack authorization flag: $SUBSTACK_CONTENT_AUTHORIZED"
 
       - name: Run offline regression tests
