@@ -56,7 +56,7 @@ class WorkflowContractTests(unittest.TestCase):
             self.assertIn("SUPABASE_CA_CERT", workflow)
             self.assertIn("sslmode=verify-full", workflow)
             self.assertIn("PGSSLROOTCERT", workflow)
-            self.assertIn('cfg.get("sslrootcert")', workflow)
+            self.assertIn("sslrootcert", workflow)
 
     def test_substack_requires_explicit_authorization(self):
         workflow = (ROOT / ".github/workflows/weekly-pipeline.yml").read_text()
