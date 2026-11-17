@@ -81,7 +81,7 @@ The database is expected to use PostgreSQL over TLS. For GitHub-hosted runners, 
 The scheduled workflow is `.github/workflows/weekly-pipeline.yml`.
 
 - Schedule: every Monday at **03:30 Asia/Shanghai** (Sunday 19:30 UTC).
-- Manual trigger: `workflow_dispatch` (operational recovery only; CI and acceptance tests are automatic).
+- No manual trigger is exposed; the workflow runs on its schedule after the production gate is enabled.
 - Order: CI checks → M1/M2 collection → M3 indexing → M4 localization.
 - Concurrency: overlapping scheduled runs are serialized.
 - The workflow runs on GitHub-hosted runners; it does not require a VPS, Docker daemon, or systemd timer.
@@ -114,7 +114,7 @@ The code licence below does not grant rights to third-party articles, images, na
 
 ### Automatic read-only integration preflight
 
-The separate `.github/workflows/integration-preflight.yml` runs automatically on relevant `main` pushes and weekly, but only when the repository variable `OVERSEAS_STORIES_INTEGRATION_ENABLED=true`. It verifies the real GitHub Runner's PostgreSQL TLS/read-only query access, a synthetic authenticated model extraction call, and the indie.md adapter's network access. Each probe runs independently so a database authentication failure does not hide the other results. No database writes are made. A successful preflight is **not** a full M1–M4 production E2E, and does not authorize cutover by itself.
+The separate `.github/workflows/integration-preflight.yml` runs automatically on relevant `main` pushes and weekly, but only when the repository variable `OVERSEAS_STORIES_INTEGRATION_ENABLED=true`. There is no `Run workflow` button or manual dispatch dependency. It verifies the real GitHub Runner's PostgreSQL TLS/read-only query access, a synthetic authenticated model extraction call, and the indie.md adapter's network access. Each probe runs independently so a database authentication failure does not hide the other results. No database writes are made. A successful preflight is **not** a full M1–M4 production E2E, and does not authorize cutover by itself.
 
 ## Tests
 
