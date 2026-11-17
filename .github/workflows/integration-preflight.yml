@@ -9,6 +9,7 @@ on:
       - ".github/workflows/integration-preflight.yml"
   schedule:
     - cron: "41 20 * * 0" # Monday 04:41 Asia/Shanghai, after the weekly pipeline.
+  workflow_dispatch:
 
 permissions:
   contents: read
