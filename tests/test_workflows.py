@@ -50,6 +50,14 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("!cancelled()", workflow)
         self.assertNotIn("github.event_name == 'schedule'", workflow)
 
+    def test_github_workflows_require_supabase_ca_verification(self):
+        for path in (".github/workflows/integration-preflight.yml", ".github/workflows/weekly-pipeline.yml"):
+            workflow = (ROOT / path).read_text()
+            self.assertIn("SUPABASE_CA_CERT", workflow)
+            self.assertIn("sslmode=verify-full", workflow)
+            self.assertIn("PGSSLROOTCERT", workflow)
+            self.assertIn("sslrootcert=", workflow)
+
     def test_substack_requires_explicit_authorization(self):
         workflow = (ROOT / ".github/workflows/weekly-pipeline.yml").read_text()
         self.assertIn("vars.SUBSTACK_CONTENT_AUTHORIZED", workflow)
