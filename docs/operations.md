@@ -28,7 +28,7 @@ Actions secrets:
 - `AI_EXTRACTION_ENDPOINT`
 - `AI_EXTRACTION_API_KEY`
 - `AI_EXTRACTION_MODEL`
-- `SUPABASE_CA_CERT` (optional PEM CA certificate; required if the URL uses `sslmode=verify-full`)
+- `SUPABASE_CA_CERT` (required PEM CA certificate; used with `sslmode=verify-full`)
 
 Actions variables:
 
@@ -41,7 +41,7 @@ The scheduled **Integration preflight (read-only)** performs one authenticated m
 ## Troubleshooting
 
 - **Missing secret**: add the named secret in repository Settings → Secrets and variables → Actions.
-- **Database connection failure**: check the pooler/direct connection URL, username, password, TLS mode, and the runner role's grants.
+- **Database connection failure**: check the pooler/direct connection URL, username, password, TLS mode, CA certificate secret, and the runner role's grants. Preserve `sslmode=verify-full`; do not embed the old server-local CA file path in `DATABASE_URL`.
 - **Gateway timeout**: verify that the HTTPS gateway is reachable from public GitHub-hosted runners and that the configured model is available. Do not switch to a private Docker hostname; the GitHub runner is outside that network.
 - **Substack skipped**: this is intentional until the authorization variable is explicitly set to `true`.
 - **M3/M4 failure**: inspect the failing step's output. Do not reset the database or re-run schema migrations as a troubleshooting shortcut.
