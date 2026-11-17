@@ -74,7 +74,7 @@ The SQL files in `db/` are migration templates for a new installation:
 
 Do not reapply initial schema or migrations to an existing production database without reviewing its migration history. This repository does not automatically run DDL against your Supabase project.
 
-The database is expected to use PostgreSQL over TLS. For GitHub-hosted runners, use the Supabase shared session pooler connection string (port 5432). Its username for a custom role must be `ROLE.PROJECT_REF`, not just `ROLE`; the password must be that role's password. Prefer `sslmode=verify-full` with the optional `SUPABASE_CA_CERT` secret; at minimum require TLS. Do not retain a server-local CA file path in the connection string.
+The database is expected to use PostgreSQL over TLS. For GitHub-hosted runners, use the Supabase shared session pooler connection string (port 5432). Its username for a custom role must be `ROLE.PROJECT_REF`, not just `ROLE`; the password must be that role's password. Preserve strict certificate verification with `sslmode=verify-full`. Configure the PEM CA certificate as the required GitHub Actions secret `SUPABASE_CA_CERT`; the workflow writes it to an ephemeral runner file and sets `PGSSLROOTCERT`. Do not put a server-local `sslrootcert=/run/certs/...` path in `DATABASE_URL`.
 
 ## GitHub Actions
 
@@ -94,7 +94,7 @@ Configure these repository **Actions secrets** under **Settings → Secrets and 
 | `AI_EXTRACTION_ENDPOINT` | HTTPS URL of the OpenAI-compatible model gateway |
 | `AI_EXTRACTION_API_KEY` | Model gateway credential |
 | `AI_EXTRACTION_MODEL` | Model identifier used for extraction and localization |
-| `SUPABASE_CA_CERT` | Optional PEM CA certificate; required when `DATABASE_URL` uses `sslmode=verify-full` |
+| `SUPABASE_CA_CERT` | Required PEM CA certificate used for `sslmode=verify-full` server verification |
 
 Optional repository **Actions variable**:
 
