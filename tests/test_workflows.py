@@ -38,11 +38,11 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("OVERSEAS_STORIES_INTEGRATION_ENABLED == 'true'", workflow)
         self.assertIn("default_transaction_read_only=on", workflow)
         self.assertIn("--dry-run --source indie-md --ai-limit 0", workflow)
-        self.assertNotIn("workflow_dispatch:", workflow)
+        self.assertIn("workflow_dispatch:", workflow)
 
     def test_automatic_integration_preflight_checks_real_gateway_independently(self):
         workflow = (ROOT / ".github/workflows/integration-preflight.yml").read_text()
-        self.assertNotIn("workflow_dispatch:", workflow)
+        self.assertIn("workflow_dispatch:", workflow)
         self.assertIn("push:", workflow)
         self.assertIn("schedule:", workflow)
         self.assertIn("default_transaction_read_only=on", workflow)
