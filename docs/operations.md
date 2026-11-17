@@ -18,13 +18,9 @@ M2 and M4 each have independent limits of five model calls per run. A failure st
 
 Set `OVERSEAS_STORIES_INTEGRATION_ENABLED=true` only after the required repository secrets are present. The independent `integration-preflight.yml` runs on relevant main pushes and a weekly schedule; it verifies a read-only PostgreSQL query and indie.md dry-run without incurring LLM fees. A passing result does not replace a successful real M1–M4 E2E or permission to cut over.
 
-## Manual run
-
-Open **Actions → Weekly overseas founder stories → Run workflow** in GitHub. Manual and scheduled runs share a concurrency group, so they will not overlap. This is an emergency operations mechanism, not an acceptance-test requirement; automated checks run on push/PR.
-
 ## Required configuration
 
-The production schedule is gated by the Actions variable `OVERSEAS_STORIES_PRODUCTION_ENABLED`, which defaults to false. The read-only preflight schedule is gated by `OVERSEAS_STORIES_INTEGRATION_ENABLED`, also false by default. A manual preflight run is allowed even while the scheduled preflight is disabled.
+The production schedule is gated by the Actions variable `OVERSEAS_STORIES_PRODUCTION_ENABLED`, which defaults to false. The read-only preflight schedule is gated by `OVERSEAS_STORIES_INTEGRATION_ENABLED`, also false by default. The preflight has no manual dispatch; relevant pushes and its weekly schedule are the only triggers.
 
 Actions secrets:
 
@@ -41,8 +37,6 @@ Actions variables:
 - `SUBSTACK_CONTENT_AUTHORIZED` (defaults to `false`; enables Substack only when authorized)
 
 The scheduled **Integration preflight (read-only)** performs one authenticated model request using synthetic input and no database writes, in addition to its read-only database and source checks.
-- `OVERSEAS_STORIES_PRODUCTION_ENABLED` (defaults to `false`; cutover switch)
-- `OVERSEAS_STORIES_INTEGRATION_ENABLED` (defaults to `false`; automated read-only integration gate)
 
 ## Troubleshooting
 
