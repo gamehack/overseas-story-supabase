@@ -4,7 +4,7 @@
 
 The GitHub Actions workflow runs at 19:30 UTC every Sunday, which is Monday 03:30 in Asia/Shanghai. GitHub scheduled workflows can start later than the requested minute during periods of platform load.
 
-The production job is guarded by repository variable `OVERSEAS_STORIES_PRODUCTION_ENABLED`, which defaults to false. Before cutover, scheduled executions are intentionally skipped. Do not set the variable to true until the new GitHub Runner passes real, automatic M1–M4 integration validation and the legacy server's timer is disabled.
+Production cutover completed on 2026-11-18. The legacy `qjai-overseas-stories-weekly.timer` is disabled/inactive, and the new GitHub Actions M1–M4 workflow completed a successful production run. Subsequent production executions are schedule-only. A one-time push trigger remains restricted to commits that modify this workflow file and include the exact `[overseas-story-cutover-run]` message marker; ordinary pushes do not launch production. No manual dispatch is required.
 
 Once enabled, the workflow executes, in order:
 
@@ -20,7 +20,7 @@ Set `OVERSEAS_STORIES_INTEGRATION_ENABLED=true` only after the required reposito
 
 ## Required configuration
 
-The production schedule is gated by the Actions variable `OVERSEAS_STORIES_PRODUCTION_ENABLED`, which defaults to false. The read-only preflight schedule is gated by `OVERSEAS_STORIES_INTEGRATION_ENABLED`, also false by default. The preflight has no manual dispatch; relevant pushes and its weekly schedule are the only triggers.
+The production schedule is active and runs automatically every Monday at 03:30 Asia/Shanghai. The read-only preflight remains gated by `OVERSEAS_STORIES_INTEGRATION_ENABLED`; it has no manual dispatch and runs only on relevant pushes and its weekly schedule.
 
 Actions secrets:
 
@@ -33,7 +33,6 @@ Actions secrets:
 Actions variables:
 
 - `OVERSEAS_STORIES_INTEGRATION_ENABLED` (defaults to `false`; enables scheduled read-only preflight)
-- `OVERSEAS_STORIES_PRODUCTION_ENABLED` (defaults to `false`; enables scheduled production M1–M4)
 - `SUBSTACK_CONTENT_AUTHORIZED` (defaults to `false`; enables Substack only when authorized)
 
 The scheduled **Integration preflight (read-only)** performs one authenticated model request using synthetic input and no database writes, in addition to its read-only database and source checks.
