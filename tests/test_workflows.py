@@ -31,7 +31,12 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_production_requires_explicit_cutover(self):
         workflow = (ROOT / ".github/workflows/weekly-pipeline.yml").read_text()
-        self.assertIn("vars.OVERSEAS_STORIES_PRODUCTION_ENABLED == 'true'", workflow)
+        self.assertIn('cron: "30 19 * * 0"', workflow)
+        self.assertIn("github.event_name == 'schedule'", workflow)
+        self.assertIn("github.event_name == 'push'", workflow)
+        self.assertIn("[overseas-story-cutover-run]", workflow)
+        self.assertIn('.github/workflows/weekly-pipeline.yml', workflow)
+        self.assertNotIn("OVERSEAS_STORIES_PRODUCTION_ENABLED", workflow)
 
     def test_integration_preflight_is_automatic_and_read_only(self):
         workflow = (ROOT / ".github/workflows/integration-preflight.yml").read_text()
