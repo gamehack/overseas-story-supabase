@@ -45,7 +45,7 @@ jobs:
             echo "::error::Missing required GitHub Actions secret: SUPABASE_CA_CERT"
             exit 1
           fi
-          printf '%s\\n' "$SUPABASE_CA_CERT" > "$RUNNER_TEMP/supabase-ca.crt"
+          printf '%s\n' "$SUPABASE_CA_CERT" > "$RUNNER_TEMP/supabase-ca.crt"
           chmod 600 "$RUNNER_TEMP/supabase-ca.crt"
           echo "PGSSLROOTCERT=$RUNNER_TEMP/supabase-ca.crt" >> "$GITHUB_ENV"
 
