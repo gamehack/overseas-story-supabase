@@ -1,4 +1,5 @@
 name: Integration preflight (read-only)
+# Verification rerun after SUPABASE_CA_CERT secret update.
 
 on:
   workflow_dispatch:
