@@ -81,7 +81,9 @@ The database is expected to use PostgreSQL over TLS. For GitHub-hosted runners, 
 The scheduled workflow is `.github/workflows/weekly-pipeline.yml`.
 
 - Schedule: every Monday at **03:30 Asia/Shanghai** (Sunday 19:30 UTC).
-- No manual trigger is exposed; the workflow runs on its schedule after the production gate is enabled.
+- Production cutover completed on 2026-11-18 after read-only E2E validation and confirmation that the legacy systemd timer was disabled.
+- The one-time cutover run used the commit marker `[overseas-story-cutover-run]`; ordinary pushes do not trigger production.
+- Subsequent production runs are schedule-only; no manual dispatch or UI click is required.
 - Order: CI checks → M1/M2 collection → M3 indexing → M4 localization.
 - Concurrency: overlapping scheduled runs are serialized.
 - The workflow runs on GitHub-hosted runners; it does not require a VPS, Docker daemon, or systemd timer.
@@ -102,9 +104,8 @@ Optional repository **Actions variable**:
 |---|---|---|
 | `SUBSTACK_CONTENT_AUTHORIZED` | `false` | Explicitly enables the configured Substack RSS sources when set to `true` |
 | `OVERSEAS_STORIES_INTEGRATION_ENABLED` | `false` | Enables the scheduled read-only Supabase/source preflight |
-| `OVERSEAS_STORIES_PRODUCTION_ENABLED` | `false` | Enables the scheduled M1–M4 production workflow after cutover |
 
-The production job is **disabled by default**. Set the repository variable `OVERSEAS_STORIES_PRODUCTION_ENABLED=true` **only after** GitHub-hosted end-to-end validation, secret configuration, and the old server timer being disabled. Otherwise the scheduled job is skipped and never writes to production. The production workflow fails early when required database or model secrets are missing. The AI endpoint must use HTTPS. The integration preflight runs automatically on relevant pushes and weekly, including one synthetic model call; it never writes to Supabase. Ensure the endpoint matches `https://omniroute.qjai.org/v1/chat/completions`.
+The production workflow is active on its Monday schedule. The first production cutover run was launched by a specifically marked commit after GitHub-hosted read-only validation, strict CA verification, and legacy timer shutdown. The push trigger is restricted to changes to the workflow file and the exact `[overseas-story-cutover-run]` commit marker; ordinary pushes do not launch production. Subsequent production runs are schedule-only. The workflow fails early when required database or model secrets are missing. The AI endpoint must use HTTPS. The integration preflight runs automatically on relevant pushes and weekly, including one synthetic model call; it never writes to Supabase. Ensure the endpoint matches `https://omniroute.qjai.org/v1/chat/completions`.
 
 ### Substack content boundary
 
